@@ -12,8 +12,8 @@ import urllib.request
 
 # 검색어 리스트 정의
 searchKeys = [
-    "Caucasian young female side profile",              # 백인, 젊은 여성 측면 사진
-    "Caucasian middle-aged female side profile",        # 백인, 중년 여성 측면 사진
+    "이 부분에 검색할 사진 입력",
+    "여러 개 가능"
 ]
 
 for searchKey in searchKeys:
