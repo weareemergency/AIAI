@@ -14,7 +14,7 @@ class Draw:
         else:
             cv2.rectangle(frame, (x1, y1), (x2, y2), self.red, 2)
 
-    def face(self, frame, x, y):
+    def ear(self, frame, x, y):
         cv2.circle(frame, (x, y), 3, self.red, 3)
 
 

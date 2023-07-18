@@ -8,42 +8,58 @@ from Module.Draw.draw import Draw
 from Module.Draw.XYvalue import rect_vertex
 
 def main():
-    count = 0
-    with mp_face_mesh.FaceMesh(
-            max_num_faces=1,
-            refine_landmarks=True,
-            min_detection_confidence=0.5,
-            min_tracking_confidence=0.5) as face_mesh:
-        while cap.isOpened():
-            ret, frame = cap.read()
+    cap = cv2.VideoCapture(0)
 
-            if not ret:
-                print("웹캠을 찾을 수 없습니다.")
-                continue
+    mp_pose = mp.solutions.pose
+    pose = mp_pose.Pose()
 
-            frame, results = frame_setting(frame, face_mesh)
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
 
-            if results.multi_face_landmarks:
-                for face_landmarks in results.multi_face_landmarks:
-                    for idx, landmark in enumerate(face_landmarks.landmark):
-                        x = int(landmark.x * frame.shape[1])
-                        y = int(landmark.y * frame.shape[0])
+        frame_rgb = frame_setting(frame)  # BGR 이미지를 RGB로 변환합니다.
+        results = pose.process(frame_rgb)
 
-                        center = Draw()
-                        face = Draw()
+        if results.pose_landmarks:
+            right_ear_landmark = results.pose_landmarks.landmark[mp_pose.PoseLandmark.RIGHT_EAR]
+            left_ear_landmark = results.pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_EAR]
+            nose = results.pose_landmarks.landmark[mp_pose.PoseLandmark.NOSE]
 
-                        # 코 인덱스 4번 / 귀 인덱스 234, 454번
-                        if idx == 4 or idx == 234 or idx == 454:
-                            face.face(frame, x, y)
-                            if idx == 4:
-                                if (x1 <= x <= x2) and (y1 <= y <= y2):
-                                    center.center_rect(frame, width, height, value, 1)
-                                else:
-                                    center.center_rect(frame, width, height, value, 0)
+            h, w, _ = frame.shape
+            right_ear_x, right_ear_y = int(right_ear_landmark.x * w), int(right_ear_landmark.y * h)
+            left_ear_x, left_ear_y = int(left_ear_landmark.x * w), int(left_ear_landmark.y * h)
+            nose_x, nose_y = int(nose.x * w), int(nose.y * h)
 
-            cv2.imshow('Frame', frame)
-            if cv2.waitKey(5) == 27:
-                break
+            right_ear = Draw()
+            left_ear = Draw()
+            nose = Draw()
+            center = Draw()
+
+            diff_x = left_ear_x - right_ear_x
+            diff_y = left_ear_y - right_ear_y
+
+            if (x1 <= nose_x <= x2) and (y1 <= nose_y <= y2):
+                if diff_x < 28 and diff_y < 8:
+                    center.center_rect(frame, width, height, first_rect, 1)
+                    center.center_rect(frame, width, height, second_rect, 1)
+                else:
+                    center.center_rect(frame, width, height, first_rect, 1)
+                    center.center_rect(frame, width, height, second_rect, 0)
+            else:
+                center.center_rect(frame, width, height, first_rect, 0)
+                center.center_rect(frame, width, height, second_rect, 0)
+
+            print(diff_x, diff_y)
+            nose.ear(frame, nose_x, nose_y)
+            right_ear.ear(frame, right_ear_x, right_ear_y)
+            left_ear.ear(frame, left_ear_x, left_ear_y)
+
+        cv2.imshow('Main', frame)  # 결과 프레임을 보여줍니다.
+
+        if cv2.waitKey(1) == 27:
+            break
+
     cap.release()
     cv2.destroyAllWindows()
 
@@ -51,12 +67,15 @@ def main():
 if __name__ == "__main__":
     cap = cv2.VideoCapture(0)
 
+    # cap shape
     width, height = get_shape(int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-    mp_face_mesh = mp.solutions.face_mesh
-
-    # 센터에 그려지는 사각형 꼭짓점 좌표를 구함
     x1, x2, y1, y2 = rect_vertex(width, height)
-    value = 400
+    first_rect = 400
+    second_rect = 386
+
+    mp_pose = mp.solutions.pose
+    pose = mp_pose.Pose()
 
     main_thread = threading.Thread(target=main())
     main_thread.start()
+
