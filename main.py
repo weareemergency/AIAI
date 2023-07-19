@@ -1,6 +1,7 @@
 import cv2
 import mediapipe as mp
 import threading
+import os
 
 from Module.Frame.setting import frame_setting, get_shape
 from Module.Frame.guide import UserGuide
@@ -8,9 +9,17 @@ from Module.Draw.draw import Draw
 from Module.Draw.XY import Vertex, Body
 from Image_detect import detect
 
+def create_folder(folder_path):
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+        print(f"폴더를 만들었습니다.: {folder_path}")
+    else:
+        print(f"폴더 존재 : {folder_path}")
 
 def main():
     cap = cv2.VideoCapture(0)
+    folder_path = 'Result/'
+    create_folder(folder_path)
 
     mp_pose = mp.solutions.pose
     pose = mp_pose.Pose()
@@ -66,7 +75,7 @@ def main():
             ifin_3 = (x1 <= right_shoulder_x <= x2) and (y1 <= right_shoulder_y <= y2) and (x1 <= left_shoulder_x <= x2) and (y1 <= left_shoulder_y <= y2)
 
             if ifin_1 and ifin_2 and ifin_3:
-                if (abs(ear_diff_x) - abs(ear_diff_y)) < 50:
+                if (abs(ear_diff_x) - abs(ear_diff_y)) < 40:
                     frame[y:y + overlay_height, x:x + overlay_width] = step3
                     center.center_rect(first_rect, 1)
                     center.center_rect(second_rect, 1)
