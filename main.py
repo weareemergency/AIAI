@@ -6,6 +6,7 @@ from Module.Frame.setting import frame_setting, get_shape
 from Module.Frame.guide import UserGuide
 from Module.Draw.draw import Draw
 from Module.Draw.XY import Vertex, Body
+from Image_detect import detect
 
 
 def main():
@@ -71,9 +72,10 @@ def main():
                     center.center_rect(second_rect, 1)
                     count += 1
                     if count == 40:
-                        cv2.imwrite('Result/result.jpeg', origin_frame)
+                        cv2.imwrite('Result/UserPicture.jpeg', origin_frame)
 
                     if cv2.waitKey(1) == 27 or count == 60:
+                        detect()
                         break
                 else:
                     frame[y:y + overlay_height, x:x + overlay_width] = step2

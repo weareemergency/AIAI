@@ -2,32 +2,51 @@ import torch
 import cv2
 import numpy as np
 
-path = "Weight file path"
-model = torch.hub.load('ultralytics/yolov5', 'custom', path, force_reload=True)
+from Module.Draw.draw import Angle
 
-image_path = "Image file path"
+def detect():
+    xy_list = []
+    path = "weights/Version_1.pt"
+    image_path = "Result/UserPicture.jpeg"
 
-image = cv2.imread(image_path)
+    model = torch.hub.load('ultralytics/yolov5', 'custom', path, force_reload=True)
+    image = cv2.imread(image_path)
 
-result = model(image)
-predictions = result.pandas().xyxy[0]  # 예측된 박스와 레이블 정보를 가져온다.
+    height, width, _ = image.shape
+    result = model(image)
 
-# 클래스 이름을 가져오는 코드
-class_names = model.module.names if hasattr(model, 'module') else model.names
+    predictions = result.pandas().xyxy[0]  # 예측된 박스와 레이블 정보를 가져온다.
 
-for _, row in predictions.iterrows():
-    label = row['name']
-    confidence = row['confidence']
-    bbox = row[['xmin', 'ymin', 'xmax', 'ymax']].values
+    # 클래스 이름을 가져오는 코드
+    class_names = model.module.names if hasattr(model, 'module') else model.names
 
-    x_min, y_min, x_max, y_max = bbox.astype(np.int)
+    count = 0
 
-    if confidence > 0.51111:
-        cv2.rectangle(image, (x_min, y_min), (x_max, y_max), (255, 0, 0), 2)
-        label_text = f"{label}: {confidence:.2f}"
-        cv2.putText(image, label_text, (x_min, y_min - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+    for _, row in predictions.iterrows():
+        label = row['name']
+        confidence = row['confidence']
+        bbox = row[['xmin', 'ymin', 'xmax', 'ymax']].values
 
-cv2.imshow("frame", image)
-cv2.waitKey(0)
+        x_min, y_min, x_max, y_max = bbox.astype(np.int)
 
-cv2.destroyAllWindows()
+        if confidence > 0.51111:
+            if label == 'number7' or label == 'ear':
+                if label == 'number7':
+                    number7 = Angle(image, int((x_min + x_max) / 2), int((y_min + y_max) / 2))
+                    number7_x, number7_y = number7.return_xy()
+                    number7.position_rect(x_min, y_min, x_max, y_max, number7_x, number7_y, f"{label}: {confidence:.2f}")
+                    xy_list.append([number7_x, number7_y])
+
+                if label == 'ear':
+                    ear = Angle(image, int((x_min + x_max) / 2), int((y_min + y_max) / 2))
+                    ear_x, ear_y = ear.return_xy()
+                    ear.position_rect(x_min, y_min, x_max, y_max, ear_x, ear_y, f"{label}: {confidence:.2f}")
+                    xy_list.append([ear_x, ear_y])
+
+    turtle_angel = Angle(image, _, _)
+    turtle_angel.turtle_neck(xy_list)
+
+    cv2.imwrite('Result/Result.jpeg', image)
+    cv2.destroyAllWindows()
+
+# detect()
