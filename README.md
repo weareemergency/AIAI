@@ -16,27 +16,12 @@
 
 <br>
 
-### Folder Tree
+### 사용법 
 
-```commandline
-├── Crawling.py
-├── Image_detect.py
-├── Module
-│   ├── Draw
-│   │   ├── XYvalue.py
-│   │   ├── __pycache__
-│   │   │   ├── XYvalue.cpython-38.pyc
-│   │   │   └── draw.cpython-38.pyc
-│   │   └── draw.py
-│   └── Frame
-│       ├── __pycache__
-│       │   └── setting.cpython-38.pyc
-│       └── setting.py
-├── README.md
-├── __pycache__
-├── main.py
-└── weights
-    ├── README.md
-    ├── TEST_IMG.png
-    └── Version_1.pt
+```
+1. git clone https://github.com/weareemergency/Emergency_AI.git 
+
+2. pip install -r requirements.txt
+ 
+3. python main.py
 ```
