@@ -2,9 +2,12 @@ import torch
 import cv2
 import numpy as np
 
+from Module.Draw.draw import Angle
+
 def detect():
+    xy_list = []
     path = "weights/Version_1.pt"
-    image_path = "Result/result.jpeg"
+    image_path = "Result/UserPicture.jpeg"
 
     model = torch.hub.load('ultralytics/yolov5', 'custom', path, force_reload=True)
     image = cv2.imread(image_path)
@@ -14,31 +17,31 @@ def detect():
 
     predictions = result.pandas().xyxy[0]  # 예측된 박스와 레이블 정보를 가져온다.
 
-    # 클래스 이름을 가져오는 코드
-    class_names = model.module.names if hasattr(model, 'module') else model.names
-
-    # 경추 7번이 보이는가? 사람 귀가 보이는가? 에 대한 질문을 하는 변수
-    count = 0
-
     for _, row in predictions.iterrows():
         label = row['name']
         confidence = row['confidence']
         bbox = row[['xmin', 'ymin', 'xmax', 'ymax']].values
 
-        x_min, y_min, x_max, y_max = bbox.astype(np.int)
+        x_min, y_min, x_max, y_max = bbox.astype(int)
 
         if confidence > 0.51111:
             if label == 'number7' or label == 'ear':
-                count += 1
+                if label == 'number7':
+                    number7 = Angle(image, int((x_min + x_max) / 2), int((y_min + y_max) / 2))
+                    number7_x, number7_y = number7.return_xy()
+                    number7.position_rect(x_min, y_min, x_max, y_max, number7_x, number7_y, f"{label}: {confidence:.2f}")
+                    xy_list.append([number7_x, number7_y])
 
-            label_text = f"{label}: {confidence:.2f}"
-            cv2.rectangle(image, (x_min, y_min), (x_max, y_max), (255, 0, 0), 2)
-            cv2.putText(image, label_text, (x_min, y_min - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+                if label == 'ear':
+                    ear = Angle(image, int((x_min + x_max) / 2), int((y_min + y_max) / 2))
+                    ear_x, ear_y = ear.return_xy()
+                    ear.position_rect(x_min, y_min, x_max, y_max, ear_x, ear_y, f"{label}: {confidence:.2f}")
+                    xy_list.append([ear_x, ear_y])
 
-    return count
-    # cv2.imshow("frame", image)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+    turtle_angel = Angle(image, _, _)
+    turtle_angel.turtle_neck(xy_list)
 
-result = detect()
-print(result)
+    cv2.imwrite('Result/Result.jpeg', image)
+    cv2.destroyAllWindows()
+
+detect()

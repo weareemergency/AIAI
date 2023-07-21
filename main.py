@@ -7,7 +7,7 @@ from Module.Frame.setting import frame_setting, get_shape
 from Module.Frame.guide import UserGuide
 from Module.Draw.draw import Draw
 from Module.Draw.XY import Vertex, Body
-from Image_detect import detect
+from Module.detect.imagedetect import detect
 
 def create_folder(folder_path):
     if not os.path.exists(folder_path):
@@ -75,7 +75,7 @@ def main():
             ifin_3 = (x1 <= right_shoulder_x <= x2) and (y1 <= right_shoulder_y <= y2) and (x1 <= left_shoulder_x <= x2) and (y1 <= left_shoulder_y <= y2)
 
             if ifin_1 and ifin_2 and ifin_3:
-                if (abs(ear_diff_x) - abs(ear_diff_y)) < 40:
+                if (abs(ear_diff_x) - abs(ear_diff_y)) < 40: # 40 부분은 때에 따라서 무조건 수정
                     frame[y:y + overlay_height, x:x + overlay_width] = step3
                     center.center_rect(first_rect, 1)
                     center.center_rect(second_rect, 1)
@@ -85,6 +85,7 @@ def main():
 
                     if cv2.waitKey(1) == 27 or count == 60:
                         detect()
+
                         break
                 else:
                     frame[y:y + overlay_height, x:x + overlay_width] = step2
@@ -118,5 +119,8 @@ if __name__ == "__main__":
     mp_pose = mp.solutions.pose
     pose = mp_pose.Pose()
 
-    main_thread = threading.Thread(target=main())
-    main_thread.start()
+    try:
+        main_thread = threading.Thread(target=main())
+        main_thread.start()
+    except IndexError:
+        print("어디하나 잘못 측정되뿌다")
