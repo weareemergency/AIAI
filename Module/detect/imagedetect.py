@@ -30,7 +30,7 @@ def detect():
                     number7 = Angle(image, int((x_min + x_max) / 2), int((y_min + y_max) / 2))
                     number7_x, number7_y = number7.return_xy()
                     number7.position_rect(x_min, y_min, x_max, y_max, number7_x, number7_y, f"{label}: {confidence:.2f}")
-                    xy_list.append([number7_x, number7_y])
+                    xy_list.append([number7_x, number7_y]) # 측정된 박스 좌표를 건네줌
 
                 if label == 'ear':
                     ear = Angle(image, int((x_min + x_max) / 2), int((y_min + y_max) / 2))
@@ -44,4 +44,6 @@ def detect():
     cv2.imwrite('Result/Result.jpeg', image)
     cv2.destroyAllWindows()
 
-detect()
+    print(xy_list)
+
+#detect()
