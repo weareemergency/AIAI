@@ -1,5 +1,4 @@
-import cv2
-import math
+import cv2, pymysql
 
 class Draw:
     def __init__(self, frame, width, hegiht):
@@ -28,30 +27,35 @@ class Angle:
         self.x = x
         self.y = y
 
+        self.host = '127.0.0.1'
+        self.user = 'root'
+        self.password = '1234'
+        self.database = 'test'
+        self.connection = pymysql.connect(host=self.host, user=self.user, password=self.password, database=self.database)
+
     def turtle_neck(self, xy_list):  # 각 ABC 일때
-        color = (255, 0, 0)
+        flag = None
+        try:
+            pt1_x, pt1_y = xy_list[1][0], xy_list[1][1]  # pt1 가로 979, 320
+            pt2_x, pt2_y = xy_list[0][0], xy_list[0][1]  # pt2 세로
 
-        # meet_x, meet_y = xy_list[0][0], xy_list[0][1] # θ
-        pt1_x, pt1_y = xy_list[1][0], xy_list[1][1]  # pt1 가로 979, 320
-        pt2_x, pt2_y = xy_list[0][0], xy_list[0][1]  # pt2 세로
-        cv2.putText(self.image, f"{(pt1_x, pt1_y)}", (pt1_x, pt1_y), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-        cv2.putText(self.image, f"{(pt2_x, pt2_y)}", (pt2_x, pt2_y), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+            if pt1_x and pt1_y and pt2_x and pt2_y:
+                cv2.line(self.image, (pt1_x, pt1_y), (pt1_x, pt2_y), (0, 0, 255), 2)
+                cv2.line(self.image, (pt2_x, pt2_y), (pt1_x, pt2_y), (0,0,255), 2)
+                cv2.putText(self.image, f"{(pt1_x, pt1_y)}", (pt1_x, pt1_y), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+                cv2.putText(self.image, f"{(pt2_x, pt2_y)}", (pt2_x, pt2_y), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
 
-        pt1 = int(abs(pt1_x - pt2_x) / 1.777777) # 가로
-        pt2 = int(abs(pt1_y - pt2_y)) # 세로
+                pt1 = int(abs(pt1_x - pt2_x) * 1.7777778) # 가로
+                pt2 = int(abs(pt1_y - pt2_y)) # 세로
+                result = round((pt2 / pt1), 7)
 
-        # # cv2.line(self.image, (meet_x, meet_y), (pt1_x, pt1_y), color, 3)
-        # cv2.line(self.image, (), (pt1_x, pt2_y), color, 3) # pt1
-        # cv2.line(self.image, (pt1_x, pt1_y), (pt1_x, pt2_y), color, 3) # pt2
+                return result
 
-        print("pt1", pt1)
-        print("pt2", pt2)
-        print("pt1x, pt1y", pt2_x, pt1_y)
-        print("pt2x, pt2y", pt1_x, pt2_y)
-        # print("meet_x, meet_y", meet_x, meet_y)
+        except IndexError:
+            print("목 또는 귀가 탐지되지 않았습니다.")
 
-        cv2.line(self.image, (0, 0), (1920, 1080), (0, 0, 255), 4)
-        cv2.line(self.image, (pt1_x, pt1_y), (pt1_x, pt1_y), (0,0,255), 4)
+            from main import AI 
+            AI().neck_angle_value()
 
     def position_rect(self, x_min, y_min, x_max, y_max, number7_x, number7_y, label_text):
         cv2.rectangle(self.image, (x_min, y_min), (x_max, y_max), (255, 0, 0), 2)
